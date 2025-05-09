@@ -10,7 +10,7 @@
           |-/.____.'          MS-SIS @ ESIEA | Intern @ Veolia
          /___\ /___\
 
-┌──(rzdhop㉿github)-[~/projects]
+┌──(rzdhop㉿github)-[~]
 └─$ cd projects && ls -l
 drwxr-xr-x  1 rida  cybersec  4096 May  7 14:58  📁 ClandestineCore/
 drwxr-xr-x  1 rida  cybersec  4096 May  7 14:58  📁 SSDTEnum/
