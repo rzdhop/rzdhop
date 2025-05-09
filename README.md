@@ -3,9 +3,9 @@
 └─$ neofetch
              .---.            rzdhop@github
            .'_:___".          Reverse Engineer & Kernel dev
-           |__ --==|          Skills: C, ASM, Linux Kernel, Windows Internals
+           |__ --==|          Skills: C(++), ASM, Linux Kernel, Windows Internals, 
            [  ]  :[|          Blog: https://vrdu.notion.site
-           |__| I=[|          Motto: "Lean hard, crash hard"
+           |__| I=[|          Motto: "Lean hard, BSOD hard"
            / / ____|          
           |-/.____.'          MS-SIS @ ESIEA | Intern @ Veolia
          /___\ /___\
@@ -14,6 +14,7 @@
 └─$ cd projects && ls -l
 drwxr-xr-x  1 rida  cybersec  4096 May  7 14:58  📁 ClandestineCore/
 drwxr-xr-x  1 rida  cybersec  4096 May  7 14:58  📁 SSDTEnum/
+drwxr-xr-x  1 rida  cybersec  4096 May  7 14:58  📁 Enumerator/
 drwxr-xr-x  1 rida  cybersec  4096 May  7 14:58  📁 REKW_Part1/
 drwxr-xr-x  1 rida  cybersec  4096 May  7 14:58  🔜 future_projects.elf
 
@@ -32,11 +33,9 @@ Signaux spéciaux :
    - 54 (SIGUNHIDEM) → Remet le module (list_add(...))
    - 55 (SIGSENDNET) → Envoie un payload TCP via kernel_sendmsg
 
-Communication :
-   - Interface via ioctl() (IOCTL_IP / IOCTL_PORT / IOCTL_DATA)
-   - Buffers dynamiques via kmalloc
+Kernel-level stealth & full custom syscall hooking.
 
-Kernel-level stealth & command-and-control, full custom syscall hooking.
+TODO: payload send via RAW packets
 
 ┌──(rzdhop㉿github)-[~/projects]
 └─$ cat SSDTEnum/README.md
@@ -49,10 +48,37 @@ Objectif : retrouver dynamiquement KeServiceDescriptorTable
 
 Driver kernel en C :
    - Dump l’index, offset et adresse de chaque entrée SSDT
-   - Vérifie la validité mémoire avec MmIsAddressValid
    - Utilise DbgPrint pour afficher les infos depuis le kernel
 
-Compile avec WDK, map avec kdmapper pour éviter signature.
+Compile avec WDK, map avec kdmapper pour éviter la signature.
+
+┌──(rzdhop㉿github)-[~/projects]
+└─$ cat Enumerator/README.md
+🧬 Enumerator — Kernel-mode Windows callback extractor
+
+Objectif :
+   - Enumérer dynamiquement les callbacks noyaux non exportés :
+     • Processus (PsSetCreateProcessNotifyRoutine)
+     • Threads (PsSetCreateThreadNotifyRoutine)
+     • Chargement d’image (PsSetLoadImageNotifyRoutine)
+     • Registre (CmRegisterCallback)
+
+Méthodo :
+   - Résolution dynamique via MmGetSystemRoutineAddress()
+   - Reverse flow vers fonctions internes Psp*/Cmp*
+   - Parsage brut de structures internes et listes chainées
+   - Dump des pointeurs de fonction de callback (CALLBACK +0x8)
+
+Communication :
+   - IOCTL driver ↔ userland via interface buffered I/O
+   - Client Windows (C++) envoie des commandes :
+       → IOCTL_ENUM_PROC_CB / IOCTL_ENUM_THRD_CB / IOCTL_ENUM_LIMG_CB / IOCTL_ENUM_CMRG_CB
+       → Affichage CLI des adresses de callback
+
+⚠️ Utilisation prévue avec kdmapper (no DriverEntry STD)
+
+Client : Menu terminal pour les envoies d'IOCTL 
+Driver : Ou toute la logique opère
 
 ┌──(rzdhop㉿github)-[~/projects]
 └─$ watch ./future_projects.elf
